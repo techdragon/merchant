@@ -10,7 +10,7 @@ Stripe Payment Integration
    This integration makes use of the official `stripe`_ python package offered
    by Stripe Payments. Please install it before you use this integration.
 
-Refer to the :doc:`Stripe Payments  <gateways/stripe_payment>` Gateway for the settings attributes.
+Refer to the :doc:`Stripe Payments  </gateways/stripe_payment>` Gateway for the settings attributes.
 
 Here are the methods and attributes implemented on the ``StripeIntegration`` class:
 
@@ -47,9 +47,9 @@ Example:
        from billing.integrations.stripe_integration import StripeIntegration
 
        class StripeExampleIntegration(StripeIntegration):
-           class transaction(self, request):
+           def transaction(self, request):
                # The token is received in the POST request
-               resp = self.stripe_gateway.purchase(100, request.POST["stripeToken"])
+               resp = self.gateway.purchase(100, request.POST["stripeToken"])
 	       if resp["status"] == "SUCCESS":
                    # Redirect if the transaction is successful
                    ...

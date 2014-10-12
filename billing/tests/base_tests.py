@@ -1,11 +1,15 @@
+from django.conf import settings
 from django.test import TestCase
+from django.template import Template, Context, TemplateSyntaxError
+from django.utils.unittest.case import skipIf
+
 from billing.utils.credit_card import CreditCard
 from billing import get_gateway, GatewayNotConfigured, get_integration, IntegrationNotConfigured
-from django.conf import settings
-from django.template import Template, Context, TemplateSyntaxError
 
 
 class MerchantTestCase(TestCase):
+
+    @skipIf(not settings.MERCHANT_SETTINGS.get("authorize_net", None), "gateway not configured")
     def testCorrectClassLoading(self):
         gateway = get_gateway("authorize_net")
         self.assertEquals(gateway.display_name, "Authorize.Net")
@@ -56,3 +60,15 @@ class MerchantTestCase(TestCase):
         self.assertTrue(len(tmpl.render(Context({"obj": gc}))) > 0)
 
         settings.MERCHANT_SETTINGS = original_settings
+
+
+class CreditCardTestCase(TestCase):
+    def test_constructor(self):
+        opts = dict(number='x', year=2000, month=1, verification_value='123')
+        self.assertRaises(TypeError, lambda: CreditCard(**opts))
+        self.assertRaises(TypeError, lambda: CreditCard(first_name='x', **opts))
+        self.assertRaises(TypeError, lambda: CreditCard(last_name='y', **opts))
+        c = CreditCard(first_name='x', last_name='y', **opts)
+        self.assertEqual(c.cardholders_name, None)
+        c2 = CreditCard(cardholders_name='z', **opts)
+        self.assertEqual(c2.cardholders_name, 'z')
